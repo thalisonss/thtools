@@ -1,24 +1,34 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Management;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using ThTools.Utils;
 
 namespace ThTools.Screens
 {
     public partial class frmMainScreen : Form
-    { 
+    {
+        #region | Variaveis |
+        CPU _cpu;
+
+        #endregion
+
+
+
+        #region | Carregamento Inicial |
         public frmMainScreen()
         {
             InitializeComponent();
+            CarregamentoInicial();
+        }
+        private void CarregamentoInicial()
+        {
             CarregarPlanosEnergia();
             AtualizarPlanoEnergiaAtivo();
+            InfoCPU();
         }
+        #endregion
 
         #region | Modelo |
         public class PlanoEnergia
@@ -32,16 +42,17 @@ namespace ThTools.Screens
             }
         }
         #endregion
-        
+
         #region | Controles |
-        private void btnAplicar_Click(object sender, EventArgs e)
+        private void cboPowerPlan_SelectedIndexChanged(object sender, EventArgs e)
         {
             AplicarPlanoEnergiaSelecionado();
-
         }
         #endregion
 
         #region | Funções |
+
+        #region | Função - Energia |
         private void CarregarPlanosEnergia()
         {
             Process process = new Process();
@@ -105,7 +116,7 @@ namespace ThTools.Screens
                 process.StartInfo.CreateNoWindow = true;
                 process.Start();
                 process.WaitForExit();
-                lblPlanoAtivo.Text = "Plano de Energia Ativo: " + planoSelecionado;
+                cboPowerPlan.Text = planoSelecionado.ToString();
 
             }
             else
@@ -115,21 +126,37 @@ namespace ThTools.Screens
         }
 
         private void AtualizarPlanoEnergiaAtivo()
-        {
-            string planoAtivo = "Nenhum plano de energia ativo";
-
+        {           
             foreach (PlanoEnergia plano in cboPowerPlan.Items)
             {
-                if (plano.Nome.EndsWith("*"))
-                {
-                    // Remove o asterisco do nome antes de exibir
-                    planoAtivo = plano.Nome.TrimEnd('*').Trim();
+                if (plano.Nome.Contains("*"))
+                {                  
+                    cboPowerPlan.Text = plano.Nome;
+                    
                     break;
-                }
-            }
-
-            lblPlanoAtivo.Text = "Plano de Energia Ativo: " + planoAtivo;
+                }               
+            }         
         }
         #endregion
+
+        #region | Função - CPU |
+        
+        private void InfoCPU()
+        {
+            
+        }
+
+
+
+        #endregion
+
+        #endregion
+
+        private void timerAtualizarInfoCPU_Tick(object sender, EventArgs e)
+        {
+            _cpu = new CPU();
+            string porcentagem = $"{_cpu.PorcentagemUsoCPU()}%";
+            lblUsoCPU.Text = porcentagem;
+        }
     }
 }
